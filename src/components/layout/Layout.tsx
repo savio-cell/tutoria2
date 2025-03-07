@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen max-h-screen w-full flex-col lg:flex-row overflow-hidden">
+    <div className="flex min-h-screen max-h-screen w-full flex-col lg:flex-row overflow-hidden bg-background">
       <Sidebar />
       <main className="flex-1 flex flex-col h-full w-full overflow-hidden">
         <div className="p-3 md:p-4 flex justify-end border-b">
@@ -36,7 +37,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Button>
           )}
         </div>
-        <div className="flex-1 overflow-auto p-3 md:p-6 w-full">
+        <div className="flex-1 overflow-hidden w-full">
           {children}
         </div>
       </main>
