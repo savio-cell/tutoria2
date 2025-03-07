@@ -23,13 +23,13 @@ import { supabase } from '@/integrations/supabase/client';
 const Dashboard = () => {
   const { user } = useAuth();
   const { essays, quizResults, loading } = useProgress();
-  const [userInfo, setUserInfo] = useState(null);
-  const [recentActivity, setRecentActivity] = useState([]);
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
   const navigate = useNavigate();
   
   // Calculate total points from essays and quizzes
-  const totalEssayPoints = essays.reduce((sum, essay) => sum + (essay.score || 0), 0);
-  const totalQuizPoints = quizResults.reduce((sum, quiz) => sum + quiz.score, 0);
+  const totalEssayPoints = essays.reduce((sum, essay) => sum + (Number(essay.score) || 0), 0);
+  const totalQuizPoints = quizResults.reduce((sum, quiz) => sum + (Number(quiz.score) || 0), 0);
   const totalPoints = totalEssayPoints + totalQuizPoints;
   
   // Calculate progress percentages
@@ -40,7 +40,7 @@ const Dashboard = () => {
   // Calculate average essay score
   const evaluatedEssays = essays.filter(e => e.status === 'evaluated' && e.score !== null);
   const averageEssayScore = evaluatedEssays.length > 0 
-    ? evaluatedEssays.reduce((sum, essay) => sum + essay.score, 0) / evaluatedEssays.length 
+    ? evaluatedEssays.reduce((sum, essay) => sum + (Number(essay.score) || 0), 0) / evaluatedEssays.length 
     : 0;
   
   // Calculate average quiz score percentage with proper type checking
@@ -107,7 +107,7 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const getActivityIcon = (activity) => {
+  const getActivityIcon = (activity: any) => {
     if (activity.type === 'essay') {
       return activity.status === 'evaluated' 
         ? <CheckCircle className="h-4 w-4 text-green-500" /> 
@@ -125,7 +125,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full h-full">
       <section className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground">Bem-vindo(a) de volta! Veja seu progresso e continue seus estudos</p>

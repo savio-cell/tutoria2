@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
@@ -15,24 +16,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Drawer } from '@/components/ui/drawer';
-
-// Custom hook para verificar o tamanho da tela
-// Você precisará criar este hook se não existir
-const useMediaQueryHook = () => {
-  const isMobile = window.matchMedia('(max-width: 768px)').matches;
-  const [matches, setMatches] = useState(isMobile);
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia('(max-width: 768px)');
-    const handler = (e) => setMatches(e.matches);
-    
-    mediaQuery.addEventListener('change', handler);
-    return () => mediaQuery.removeEventListener('change', handler);
-  }, []);
-
-  return matches;
-};
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: Home },
@@ -46,6 +31,53 @@ const navItems = [
 
 const SidebarContent = ({ collapsed, setCollapsed, isMobile, closeMobileMenu }) => {
   const location = useLocation();
+  const { user } = useAuth();
+  const [userInfo, setUserInfo] = useState(null);
+  
+  // Fetch user info
+  useEffect(() => {
+    if (user) {
+      const fetchUserInfo = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('user_info')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+          
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching user info:', error);
+            return;
+          }
+          
+          setUserInfo(data);
+        } catch (error) {
+          console.error('Error fetching user info:', error);
+        }
+      };
+      
+      fetchUserInfo();
+    }
+  }, [user]);
+  
+  // Get user display name
+  const getUserDisplayName = () => {
+    if (userInfo?.full_name) {
+      return userInfo.full_name;
+    } else if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    } else if (user?.user_metadata?.name) {
+      return user.user_metadata.name;
+    } else if (user?.email) {
+      return user.email.split('@')[0];
+    } else {
+      return 'Estudante';
+    }
+  };
+
+  const getEmailDisplay = () => {
+    return user?.email || userInfo?.email || '';
+  };
   
   const handleNavClick = () => {
     if (isMobile) {
@@ -115,8 +147,8 @@ const SidebarContent = ({ collapsed, setCollapsed, isMobile, closeMobileMenu }) 
         </div>
         {(!collapsed || isMobile) && (
           <div>
-            <p className="font-medium text-sm">Aluno da Silva</p>
-            <p className="text-xs text-muted-foreground">aluno@educa.com</p>
+            <p className="font-medium text-sm truncate max-w-[180px]">{getUserDisplayName()}</p>
+            <p className="text-xs text-muted-foreground truncate max-w-[180px]">{getEmailDisplay()}</p>
           </div>
         )}
       </div>
@@ -127,7 +159,7 @@ const SidebarContent = ({ collapsed, setCollapsed, isMobile, closeMobileMenu }) 
 const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const isMobile = useMediaQueryHook();
+  const isMobile = useIsMobile();
 
   const closeMobileMenu = () => {
     setMobileOpen(false);

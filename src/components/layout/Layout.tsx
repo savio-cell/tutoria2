@@ -20,10 +20,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   };
 
   return (
-    <div className="flex min-h-screen h-screen w-full flex-col lg:flex-row">
+    <div className="flex min-h-screen max-h-screen w-full flex-col lg:flex-row overflow-hidden">
       <Sidebar />
-      <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-auto max-h-screen">
-        <div className="mb-4 md:mb-6 flex justify-end">
+      <main className="flex-1 flex flex-col h-full w-full overflow-hidden">
+        <div className="p-3 md:p-4 flex justify-end border-b">
           {user && (
             <Button 
               variant="outline" 
@@ -36,7 +36,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Button>
           )}
         </div>
-        {children}
+        <div className="flex-1 overflow-auto p-3 md:p-6 w-full">
+          {children}
+        </div>
       </main>
     </div>
   );

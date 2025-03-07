@@ -29,6 +29,7 @@ export const useProgress = () => {
   const [quizResults, setQuizResults] = useState<QuizResult[]>([]);
   const [essays, setEssays] = useState<Essay[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false); // Track save operations to prevent duplicates
 
   useEffect(() => {
     if (!user) return;
@@ -79,9 +80,11 @@ export const useProgress = () => {
     totalQuestions: number,
     timeSpent: number
   ) => {
-    if (!user) return null;
+    if (!user || isSaving) return null; // Prevent multiple concurrent saves
 
     try {
+      setIsSaving(true);
+      
       const { data, error } = await supabase
         .from('quiz_results')
         .insert({
@@ -95,13 +98,23 @@ export const useProgress = () => {
         .single();
 
       if (error) throw error;
-      setQuizResults([data, ...quizResults]);
+      
+      // Update state with new quiz result
+      setQuizResults(prevResults => {
+        // Check if this quiz result already exists to prevent duplicates
+        const exists = prevResults.some(result => result.id === data.id);
+        if (exists) return prevResults;
+        return [data, ...prevResults];
+      });
+      
       toast.success('Resultado do quiz salvo com sucesso!');
       return data;
     } catch (error) {
       console.error('Error adding quiz result:', error);
       toast.error('Erro ao salvar resultado do quiz');
       return null;
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -111,9 +124,11 @@ export const useProgress = () => {
     wordCount: number,
     timeSpent: number
   ) => {
-    if (!user) return null;
+    if (!user || isSaving) return null; // Prevent multiple concurrent saves
 
     try {
+      setIsSaving(true);
+      
       const { data, error } = await supabase
         .from('essays')
         .insert({
@@ -135,20 +150,31 @@ export const useProgress = () => {
         status: data.status === 'evaluated' ? 'evaluated' : 'submitted'
       } as Essay;
       
-      setEssays([typedData, ...essays]);
+      // Update state with new essay
+      setEssays(prevEssays => {
+        // Check if this essay already exists to prevent duplicates
+        const exists = prevEssays.some(essay => essay.id === typedData.id);
+        if (exists) return prevEssays;
+        return [typedData, ...prevEssays];
+      });
+      
       toast.success('Redação salva com sucesso!');
       return typedData;
     } catch (error) {
       console.error('Error adding essay:', error);
       toast.error('Erro ao salvar redação');
       return null;
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const updateEssayScore = async (essayId: string, score: number) => {
-    if (!user) return null;
+    if (!user || isSaving) return null; // Prevent multiple concurrent saves
 
     try {
+      setIsSaving(true);
+      
       const { data, error } = await supabase
         .from('essays')
         .update({
@@ -178,6 +204,8 @@ export const useProgress = () => {
       console.error('Error updating essay score:', error);
       toast.error('Erro ao atualizar nota da redação');
       return null;
+    } finally {
+      setIsSaving(false);
     }
   };
 
