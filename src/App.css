@@ -7,6 +7,7 @@
   padding: 0;
   text-align: left;
   height: 100vh;
+  overflow: hidden;
 }
 
 .logo {
@@ -34,5 +35,20 @@
 @media (prefers-reduced-motion: no-preference) {
   a:nth-of-type(2) .logo {
     animation: logo-spin infinite 20s linear;
+  }
+}
+
+/* Ensure all pages have proper scrolling */
+.page-container {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: 2rem;
+}
+
+/* Mobile responsiveness improvements */
+@media (max-width: 640px) {
+  .page-container {
+    padding-bottom: 5rem;
   }
 }

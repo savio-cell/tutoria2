@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -113,12 +114,10 @@ const Dashboard = () => {
         ? <CheckCircle className="h-4 w-4 text-green-500" /> 
         : <Edit className="h-4 w-4 text-amber-500" />;
     } else {
-      // Ensure we're working with numbers by explicitly converting to Number
-      // and providing fallback values if they're null, undefined, or NaN
+      // Ensure we're working with numbers for the calculation
       const score = typeof activity.score === 'number' ? activity.score : Number(activity.score || 0);
       const total = typeof activity.total === 'number' ? activity.total : Number(activity.total || 1);
       
-      // Now we can safely perform arithmetic with these numeric values
       const percentage = (score / total) * 100;
       
       return percentage >= 70 
@@ -128,176 +127,178 @@ const Dashboard = () => {
   };
 
   return (
-    <ScrollArea className="w-full h-full">
-      <div className="space-y-6 w-full p-4 pb-24 md:pb-16">
-        <section className="flex flex-col gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Bem-vindo(a) de volta! Veja seu progresso e continue seus estudos</p>
-        </section>
+    <div className="w-full h-full overflow-auto">
+      <ScrollArea className="h-[calc(100vh-57px)] w-full">
+        <div className="space-y-6 w-full p-4 pb-24 md:pb-16">
+          <section className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">Bem-vindo(a) de volta! Veja seu progresso e continue seus estudos</p>
+          </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Stats Cards */}
-          <Card className="hover-lift">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                <span>Pontuação Total</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{totalPoints.toLocaleString()}</div>
-              <p className="text-muted-foreground text-sm">
-                Redações: {totalEssayPoints.toLocaleString()} | Quizzes: {totalQuizPoints.toLocaleString()}
-              </p>
-            </CardContent>
-          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Stats Cards */}
+            <Card className="hover-lift">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                  <span>Pontuação Total</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{totalPoints.toLocaleString()}</div>
+                <p className="text-muted-foreground text-sm">
+                  Redações: {totalEssayPoints.toLocaleString()} | Quizzes: {totalQuizPoints.toLocaleString()}
+                </p>
+              </CardContent>
+            </Card>
 
-          <Card className="hover-lift">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Book className="h-4 w-4 text-primary" />
-                <span>Redações</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{essaysCompleted}</div>
-              <div className="pt-2">
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Taxa de conclusão</span>
-                  <span>{Math.round(essayCompletionRate)}%</span>
+            <Card className="hover-lift">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Book className="h-4 w-4 text-primary" />
+                  <span>Redações</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{essaysCompleted}</div>
+                <div className="pt-2">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Taxa de conclusão</span>
+                    <span>{Math.round(essayCompletionRate)}%</span>
+                  </div>
+                  <Progress value={essayCompletionRate} />
                 </div>
-                <Progress value={essayCompletionRate} />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          <Card className="hover-lift">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <FileQuestion className="h-4 w-4 text-primary" />
-                <span>Quizzes</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{quizzesCompleted}</div>
-              <div className="pt-2">
-                <div className="flex justify-between text-xs mb-1">
-                  <span>Média de acertos</span>
-                  <span>{Math.round(averageQuizPercentage)}%</span>
+            <Card className="hover-lift">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileQuestion className="h-4 w-4 text-primary" />
+                  <span>Quizzes</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold">{quizzesCompleted}</div>
+                <div className="pt-2">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Média de acertos</span>
+                    <span>{Math.round(averageQuizPercentage)}%</span>
+                  </div>
+                  <Progress value={averageQuizPercentage} />
                 </div>
-                <Progress value={averageQuizPercentage} />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </CardContent>
+            </Card>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Activity */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle>Atividade Recente</CardTitle>
-              <CardDescription>Suas últimas atividades na plataforma</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex justify-center py-6">
-                  <div className="h-10 w-10 rounded-full border-t-2 border-primary animate-spin"></div>
-                </div>
-              ) : recentActivity.length > 0 ? (
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div key={`${activity.type}-${activity.id}`} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
-                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                        {activity.type === 'essay' ? <PenTool className="h-5 w-5" /> : <FileQuestion className="h-5 w-5" />}
-                      </div>
-                      <div className="space-y-1 flex-1">
-                        <div className="flex justify-between">
-                          <p className="font-medium text-sm">{activity.title}</p>
-                          <div className="flex items-center gap-1 text-xs">
-                            {getActivityIcon(activity)}
-                            <span>
-                              {activity.type === 'essay' 
-                                ? (activity.status === 'evaluated' ? `${activity.score}/1000` : 'Enviado') 
-                                : `${activity.score}/${activity.total}`
-                              }
-                            </span>
-                          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recent Activity */}
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Atividade Recente</CardTitle>
+                <CardDescription>Suas últimas atividades na plataforma</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {loading ? (
+                  <div className="flex justify-center py-6">
+                    <div className="h-10 w-10 rounded-full border-t-2 border-primary animate-spin"></div>
+                  </div>
+                ) : recentActivity.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentActivity.map((activity) => (
+                      <div key={`${activity.type}-${activity.id}`} className="flex items-start gap-4 pb-4 border-b last:border-0 last:pb-0">
+                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                          {activity.type === 'essay' ? <PenTool className="h-5 w-5" /> : <FileQuestion className="h-5 w-5" />}
                         </div>
-                        <p className="text-muted-foreground text-xs">
-                          {activity.date.toLocaleDateString()} • {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                        </p>
-                        {activity.type === 'essay' && (
-                          <p className="text-xs">{activity.wordCount} palavras</p>
-                        )}
+                        <div className="space-y-1 flex-1">
+                          <div className="flex justify-between">
+                            <p className="font-medium text-sm">{activity.title}</p>
+                            <div className="flex items-center gap-1 text-xs">
+                              {getActivityIcon(activity)}
+                              <span>
+                                {activity.type === 'essay' 
+                                  ? (activity.status === 'evaluated' ? `${activity.score}/1000` : 'Enviado') 
+                                  : `${activity.score}/${activity.total}`
+                                }
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-muted-foreground text-xs">
+                            {activity.date.toLocaleDateString()} • {activity.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                          {activity.type === 'essay' && (
+                            <p className="text-xs">{activity.wordCount} palavras</p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <Clock className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-muted-foreground">Nenhuma atividade recente encontrada.</p>
-                </div>
-              )}
-            </CardContent>
-            <CardFooter>
-              <Button 
-                variant="outline" 
-                className="w-full"
-                onClick={() => navigate('/progress')}
-              >
-                <BarChart2 className="h-4 w-4 mr-2" />
-                Ver Todo o Progresso
-              </Button>
-            </CardFooter>
-          </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Clock className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground">Nenhuma atividade recente encontrada.</p>
+                  </div>
+                )}
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => navigate('/progress')}
+                >
+                  <BarChart2 className="h-4 w-4 mr-2" />
+                  Ver Todo o Progresso
+                </Button>
+              </CardFooter>
+            </Card>
 
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Ações Rápidas</CardTitle>
-              <CardDescription>Acesse rapidamente as principais funcionalidades</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Button 
-                className="w-full justify-start text-left" 
-                onClick={() => navigate('/essay')}
-              >
-                <PenTool className="h-4 w-4 mr-2" />
-                Escrever Nova Redação
-              </Button>
-              
-              <Button 
-                className="w-full justify-start text-left" 
-                variant="outline"
-                onClick={() => navigate('/quiz')}
-              >
-                <FileQuestion className="h-4 w-4 mr-2" />
-                Responder Quiz
-              </Button>
-              
-              <Button 
-                className="w-full justify-start text-left" 
-                variant="outline"
-                onClick={() => navigate('/chat-ai')}
-              >
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Assistente IA
-              </Button>
-              
-              <Button 
-                className="w-full justify-start text-left" 
-                variant="outline"
-                onClick={() => navigate('/profile')}
-              >
-                <User className="h-4 w-4 mr-2" />
-                Editar Perfil
-              </Button>
-            </CardContent>
-          </Card>
+            {/* Quick Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ações Rápidas</CardTitle>
+                <CardDescription>Acesse rapidamente as principais funcionalidades</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Button 
+                  className="w-full justify-start text-left" 
+                  onClick={() => navigate('/essay')}
+                >
+                  <PenTool className="h-4 w-4 mr-2" />
+                  Escrever Nova Redação
+                </Button>
+                
+                <Button 
+                  className="w-full justify-start text-left" 
+                  variant="outline"
+                  onClick={() => navigate('/quiz')}
+                >
+                  <FileQuestion className="h-4 w-4 mr-2" />
+                  Responder Quiz
+                </Button>
+                
+                <Button 
+                  className="w-full justify-start text-left" 
+                  variant="outline"
+                  onClick={() => navigate('/chat-ai')}
+                >
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Assistente IA
+                </Button>
+                
+                <Button 
+                  className="w-full justify-start text-left" 
+                  variant="outline"
+                  onClick={() => navigate('/profile')}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Editar Perfil
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
-      </div>
-    </ScrollArea>
+      </ScrollArea>
+    </div>
   );
 };
 

@@ -5,7 +5,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -37,7 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Button>
           )}
         </div>
-        <div className="flex-1 overflow-hidden w-full">
+        <div className="flex-1 overflow-auto w-full">
           {children}
         </div>
       </main>
