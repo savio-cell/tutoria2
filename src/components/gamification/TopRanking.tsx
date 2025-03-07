@@ -21,6 +21,35 @@ const TopRanking = () => {
 
   useEffect(() => {
     fetchRankingData();
+    
+    // Set up real-time subscription for quiz_results
+    const quizChannel = supabase
+      .channel('public:quiz_results')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'quiz_results'
+      }, () => {
+        fetchRankingData();
+      })
+      .subscribe();
+      
+    // Set up real-time subscription for essays
+    const essayChannel = supabase
+      .channel('public:essays')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'essays'
+      }, () => {
+        fetchRankingData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(quizChannel);
+      supabase.removeChannel(essayChannel);
+    };
   }, [user]);
 
   const fetchRankingData = async () => {

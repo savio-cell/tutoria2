@@ -77,7 +77,9 @@ const Dashboard = () => {
       }));
       
       // Combine and sort activities by date (newest first)
-      const combined = [...essayActivities, ...quizActivities].sort((a, b) => b.date - a.date);
+      const combined = [...essayActivities, ...quizActivities].sort((a, b) => 
+        b.date.getTime() - a.date.getTime()
+      );
       setRecentActivity(combined.slice(0, 5)); // Get 5 most recent activities
     }
   }, [essays, quizResults, loading]);
