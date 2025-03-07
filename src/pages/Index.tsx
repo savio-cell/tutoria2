@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -114,9 +113,12 @@ const Dashboard = () => {
         ? <CheckCircle className="h-4 w-4 text-green-500" /> 
         : <Edit className="h-4 w-4 text-amber-500" />;
     } else {
-      // Ensure we're working with numbers for the calculation
-      const score = Number(activity.score || 0);
-      const total = Number(activity.total || 1);
+      // Ensure we're working with numbers by explicitly converting to Number
+      // and providing fallback values if they're null, undefined, or NaN
+      const score = typeof activity.score === 'number' ? activity.score : Number(activity.score || 0);
+      const total = typeof activity.total === 'number' ? activity.total : Number(activity.total || 1);
+      
+      // Now we can safely perform arithmetic with these numeric values
       const percentage = (score / total) * 100;
       
       return percentage >= 70 
