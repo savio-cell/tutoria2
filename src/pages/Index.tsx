@@ -43,9 +43,14 @@ const Dashboard = () => {
     ? evaluatedEssays.reduce((sum, essay) => sum + essay.score, 0) / evaluatedEssays.length 
     : 0;
   
-  // Calculate average quiz score percentage
+  // Calculate average quiz score percentage with proper type checking
   const averageQuizPercentage = quizResults.length > 0 
-    ? quizResults.reduce((sum, quiz) => sum + (quiz.score / quiz.total_questions * 100), 0) / quizResults.length 
+    ? quizResults.reduce((sum, quiz) => {
+        // Ensure both score and total_questions are treated as numbers
+        const score = Number(quiz.score) || 0;
+        const totalQuestions = Number(quiz.total_questions) || 1; // Avoid division by zero
+        return sum + (score / totalQuestions * 100);
+      }, 0) / quizResults.length 
     : 0;
 
   // Generate combined activity feed from essays and quizzes
@@ -108,7 +113,11 @@ const Dashboard = () => {
         ? <CheckCircle className="h-4 w-4 text-green-500" /> 
         : <Edit className="h-4 w-4 text-amber-500" />;
     } else {
-      const percentage = (activity.score / activity.total) * 100;
+      // Ensure we're working with numbers for the calculation
+      const score = Number(activity.score) || 0;
+      const total = Number(activity.total) || 1;
+      const percentage = (score / total) * 100;
+      
       return percentage >= 70 
         ? <CheckCircle className="h-4 w-4 text-green-500" /> 
         : <FileQuestion className="h-4 w-4 text-blue-500" />;
