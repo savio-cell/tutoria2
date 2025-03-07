@@ -1,69 +1,21 @@
-# Welcome to your Lovable project
+Geração de Questões Automáticas
+A plataforma utilizará IA para criar questões personalizadas com base no conteúdo estudado pelo aluno. Este sistema adaptativo identificará áreas onde o estudante precisa de mais prática e gerará exercícios específicos para reforçar esses conhecimentos. As questões serão diversificadas em formato (múltipla escolha, dissertativas, verdadeiro/falso) e níveis de dificuldade.
 
-## Project info
+Criação de Temas para Redação
+Um gerador inteligente de temas para redação proporcionará aos alunos oportunidades para desenvolver habilidades de escrita. Os temas serão relevantes, atuais e adaptados ao nível educacional do estudante, com sugestões de abordagens e materiais de referência para consulta.
 
-**URL**: https://lovable.dev/projects/3ca9f81b-8cfc-41ae-8910-0968272477d4
+Sistema de Avaliação Automatizada
+A plataforma oferecerá avaliação automática das respostas dos alunos, fornecendo feedback imediato e detalhado. Para redações, a IA analisará aspectos como coerência, coesão, argumentação e adequação ao tema, oferecendo sugestões específicas para melhoria.
 
-## How can I edit this code?
+Assistente Virtual Integrado
+Um chat assistente estará disponível em tempo integral para esclarecer dúvidas, oferecer explicações adicionais sobre conceitos desafiadores e sugerir materiais complementares. Este assistente adaptará suas respostas ao histórico de aprendizado do aluno.
 
-There are several ways of editing your application.
+Métricas de Acompanhamento
+O sistema incluirá um painel analítico completo que mostrará:
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/3ca9f81b-8cfc-41ae-8910-0968272477d4) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/3ca9f81b-8cfc-41ae-8910-0968272477d4) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+Progresso por disciplina e tópico
+Tempo dedicado aos estudos
+Taxa de acertos e erros nas questões
+Evolução na qualidade das redações
+Identificação de pontos fortes e fracos
+Previsão de desempenho baseada em histórico
