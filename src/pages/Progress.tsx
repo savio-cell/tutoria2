@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -19,7 +18,6 @@ import { useProgress, QuizResult, Essay } from '@/hooks/useProgress';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-// Demo chart component - would use recharts in a real implementation
 const ActivityChart = ({ data }: { data: { day: string, value: number }[] }) => {
   return (
     <div className="w-full h-64 flex items-end justify-between px-2">
@@ -38,14 +36,12 @@ const ActivityChart = ({ data }: { data: { day: string, value: number }[] }) => 
   );
 };
 
-// Utility to format time in minutes and seconds
 const formatTime = (seconds: number): string => {
   const mins = Math.floor(seconds / 60);
   const secs = seconds % 60;
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
 
-// Function to prepare weekly activity data from quiz results and essays
 const prepareWeeklyActivityData = (quizResults: QuizResult[], essays: Essay[]) => {
   const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
   const today = new Date();
@@ -59,32 +55,28 @@ const prepareWeeklyActivityData = (quizResults: QuizResult[], essays: Essay[]) =
     };
   });
 
-  // Count activities per day
   const allActivities = [
     ...quizResults.map(q => ({ date: parseISO(q.created_at), type: 'quiz' })),
     ...essays.map(e => ({ date: parseISO(e.created_at), type: 'essay' }))
   ];
 
-  // Get activities for the last 7 days
   const recentActivities = allActivities.filter(activity => {
     const activityDate = activity.date;
     const daysAgo = Math.floor((today.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24));
     return daysAgo < 7;
   });
 
-  // Map activities to week days
   recentActivities.forEach(activity => {
     const dayOfWeek = activity.date.getDay();
     const dayIndex = weekDays.findIndex(day => day.day === dayNames[dayOfWeek]);
     if (dayIndex !== -1) {
-      weekDays[dayIndex].value += 25; // Increase by 25% for visibility
+      weekDays[dayIndex].value += 25;
     }
   });
 
-  // Ensure values don't exceed 100%
   weekDays.forEach(day => {
     if (day.value > 100) day.value = 100;
-    if (day.value === 0) day.value = 10; // Minimum height for visibility
+    if (day.value === 0) day.value = 10;
   });
 
   return weekDays;
@@ -94,50 +86,45 @@ const Progress_Page = () => {
   const { quizResults, essays, loading } = useProgress();
   const [activityData] = useState<{ day: string, value: number }[]>([]);
 
-  // Process weekly activity data
   const weeklyActivityData = prepareWeeklyActivityData(quizResults, essays);
 
-  // Aggregate statistics
   const completedQuizzes = quizResults.length;
   const submittedEssays = essays.length;
   const totalPoints = quizResults.reduce((total, quiz) => total + quiz.score, 0);
-  
-  // Calculate streak (simplified - just count consecutive days with activity)
+
   const calculateStreak = () => {
     const allActivities = [
       ...quizResults.map(q => parseISO(q.created_at)),
       ...essays.map(e => parseISO(e.created_at))
-    ].sort((a, b) => b.getTime() - a.getTime()); // Sort by most recent
-    
+    ].sort((a, b) => b.getTime() - a.getTime());
+
     if (allActivities.length === 0) return 0;
-    
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     let streak = 0;
     let currentDate = new Date(today);
-    
-    // Check for activity today
+
     const hasActivityToday = allActivities.some(date => {
       const activityDate = new Date(date);
       activityDate.setHours(0, 0, 0, 0);
       return activityDate.getTime() === today.getTime();
     });
-    
+
     if (hasActivityToday) {
       streak = 1;
-      
-      // Check for consecutive days backwards
-      for (let i = 1; i <= 30; i++) { // Check up to 30 days back
+
+      for (let i = 1; i <= 30; i++) {
         currentDate = new Date(today);
         currentDate.setDate(today.getDate() - i);
-        
+
         const hasActivityOnDay = allActivities.some(date => {
           const activityDate = new Date(date);
           activityDate.setHours(0, 0, 0, 0);
           return activityDate.getTime() === currentDate.getTime();
         });
-        
+
         if (hasActivityOnDay) {
           streak++;
         } else {
@@ -145,36 +132,33 @@ const Progress_Page = () => {
         }
       }
     }
-    
+
     return streak;
   };
-  
+
   const currentStreak = calculateStreak();
 
-  // Extract subjects from quiz names
   const extractSubjects = () => {
     const subjectCounts: Record<string, { count: number, correct: number, total: number }> = {};
-    
+
     quizResults.forEach(quiz => {
-      // Extract subject from quiz name - assumes format "Subject: Topic"
       const subject = quiz.quiz_name.split(':')[0]?.trim() || quiz.quiz_name;
-      
+
       if (!subjectCounts[subject]) {
         subjectCounts[subject] = { count: 0, correct: 0, total: 0 };
       }
-      
+
       subjectCounts[subject].count += 1;
       subjectCounts[subject].correct += quiz.score;
       subjectCounts[subject].total += quiz.total_questions;
     });
-    
-    // Convert to array and calculate progress percentages
+
     return Object.entries(subjectCounts).map(([subject, data]) => ({
       subject,
       progress: Math.round((data.correct / data.total) * 100) || 0
     }));
   };
-  
+
   const subjectProgress = extractSubjects();
 
   if (loading) {
@@ -187,7 +171,7 @@ const Progress_Page = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24">
       <section className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Meu Progresso</h1>
         <p className="text-muted-foreground">Acompanhe sua evolução e desempenho</p>
@@ -375,7 +359,6 @@ const Progress_Page = () => {
               {quizResults.length > 0 || essays.length > 0 ? (
                 <div className="space-y-6">
                   {(() => {
-                    // Combine and sort activities by date
                     const allActivities = [
                       ...quizResults.map(quiz => ({
                         type: 'quiz',
@@ -388,15 +371,14 @@ const Progress_Page = () => {
                         data: essay
                       }))
                     ].sort((a, b) => b.date.getTime() - a.date.getTime());
-                    
-                    // Group by date
+
                     const groupedActivities: Record<string, typeof allActivities> = {};
-                    
+
                     allActivities.forEach(activity => {
                       const today = new Date();
                       const yesterday = new Date();
                       yesterday.setDate(yesterday.getDate() - 1);
-                      
+
                       let dateKey;
                       if (activity.date.toDateString() === today.toDateString()) {
                         dateKey = 'Hoje';
@@ -405,14 +387,14 @@ const Progress_Page = () => {
                       } else {
                         dateKey = format(activity.date, 'dd/MM/yyyy', { locale: ptBR });
                       }
-                      
+
                       if (!groupedActivities[dateKey]) {
                         groupedActivities[dateKey] = [];
                       }
-                      
+
                       groupedActivities[dateKey].push(activity);
                     });
-                    
+
                     return Object.entries(groupedActivities).map(([dateKey, activities], dayIndex) => (
                       <div key={dayIndex} className="space-y-3">
                         <h3 className="font-medium text-sm text-muted-foreground">{dateKey}</h3>
@@ -420,7 +402,7 @@ const Progress_Page = () => {
                           {activities.map((activity, actIndex) => {
                             const time = format(activity.date, 'HH:mm');
                             let desc = '';
-                            
+
                             if (activity.type === 'quiz') {
                               const quiz = activity.data as QuizResult;
                               desc = `Completou Quiz: ${quiz.quiz_name}`;
@@ -428,7 +410,7 @@ const Progress_Page = () => {
                               const essay = activity.data as Essay;
                               desc = `Enviou Redação: ${essay.title}`;
                             }
-                            
+
                             return (
                               <div key={actIndex} className="relative">
                                 <div className="absolute -left-[30px] mt-1 h-4 w-4 rounded-full bg-primary"></div>

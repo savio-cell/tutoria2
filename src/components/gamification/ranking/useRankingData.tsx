@@ -125,9 +125,9 @@ export const useRankingData = () => {
         user.rank = index + 1;
       });
       
-      // Get top 3 users
-      const top3 = ranking.slice(0, 3);
-      setTopUsers(top3);
+      // Get top users
+      const topUsers = ranking.slice(0, 3);
+      setTopUsers(topUsers);
       
       // Find current user's rank
       if (user) {

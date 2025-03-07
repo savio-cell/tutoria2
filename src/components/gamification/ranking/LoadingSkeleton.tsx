@@ -8,12 +8,22 @@ const LoadingSkeleton: React.FC = () => {
       {[1, 2, 3].map((i) => (
         <div key={i} className="flex items-center gap-4">
           <Skeleton className="h-12 w-12 rounded-full" />
-          <div className="space-y-2">
+          <div className="space-y-2 flex-1">
             <Skeleton className="h-4 w-[150px]" />
             <Skeleton className="h-4 w-[100px]" />
           </div>
         </div>
       ))}
+      
+      <div className="mt-6 pt-6 border-t">
+        <div className="flex items-center gap-4">
+          <Skeleton className="h-12 w-12 rounded-full" />
+          <div className="space-y-2 flex-1">
+            <Skeleton className="h-4 w-[150px]" />
+            <Skeleton className="h-4 w-[100px]" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
