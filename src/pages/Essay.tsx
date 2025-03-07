@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { toast } from "sonner";
 import { useProgress } from '@/hooks/useProgress';
+import { useNavigate } from 'react-router-dom';
 import { 
   FileText, 
   FileCheck, 
@@ -21,7 +22,9 @@ import {
   Sparkles,
   Book,
   PenTool,
-  Save
+  Save,
+  ArrowLeft,
+  ListChecks
 } from 'lucide-react';
 
 const essayTopics = [
@@ -93,6 +96,7 @@ const mockFeedback = {
 };
 
 const Essay = () => {
+  const navigate = useNavigate();
   const { essays, addEssay, updateEssayScore, loading } = useProgress();
   const [selectedTopic, setSelectedTopic] = useState<typeof essayTopics[0] | null>(null);
   const [essayText, setEssayText] = useState('');
@@ -363,6 +367,58 @@ const Essay = () => {
     if (writingProgress >= 33) return "bg-yellow-500";
     return "bg-red-500";
   };
+
+  const navigateToProgress = () => {
+    navigate('/progress');
+  };
+
+  const navigateToQuiz = () => {
+    navigate('/quiz');
+  };
+
+  const renderTopActionsBar = () => (
+    <div className="flex justify-between items-center mb-6 gap-4">
+      <div className="flex gap-2">
+        <Button 
+          variant="outline" 
+          onClick={resetEssay}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          <span className="hidden sm:inline">Voltar</span>
+        </Button>
+        
+        <Button 
+          onClick={() => resetViewStates()}
+          variant="default"
+          className="flex items-center gap-2"
+        >
+          <PenTool className="h-4 w-4" />
+          <span>Nova Redação</span>
+        </Button>
+      </div>
+      
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          onClick={navigateToProgress}
+          className="flex items-center gap-2"
+        >
+          <ListChecks className="h-4 w-4" />
+          <span className="hidden sm:inline">Meu Progresso</span>
+        </Button>
+        
+        <Button
+          variant="outline" 
+          onClick={navigateToQuiz}
+          className="flex items-center gap-2"
+        >
+          <FileCheck className="h-4 w-4" />
+          <span className="hidden sm:inline">Quizzes</span>
+        </Button>
+      </div>
+    </div>
+  );
 
   const renderEssayList = () => (
     <Card className="mb-6">
@@ -739,11 +795,13 @@ const Essay = () => {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-[calc(100vh-200px)] overflow-y-auto">
       <section className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Redação</h1>
         <p className="text-muted-foreground">Escreva redações e receba feedback automático para melhorar suas habilidades</p>
       </section>
+
+      {renderTopActionsBar()}
 
       {!selectedTopic && !isGeneratingTheme && renderEssayList()}
 

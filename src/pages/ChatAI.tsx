@@ -12,24 +12,13 @@ import {
   MessageSquare, 
   FileQuestion, 
   BookOpen, 
-  Lightbulb, 
-  ChevronRight,
-  ThumbsUp,
-  ThumbsDown,
+  Lightbulb,
   Loader2
 } from 'lucide-react';
 import { toast } from "sonner";
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useProgress } from '@/hooks/useProgress';
-
-// Suggested questions based on various educational needs
-const suggestedQuestions = [
-  'Como posso melhorar minha nota na última redação?',
-  'Qual foi meu desempenho no último quiz?',
-  'Quais são os próximos temas de redação?',
-  'Como acompanhar meu progresso geral?',
-];
 
 const ChatAI = () => {
   const { user } = useAuth();
@@ -38,7 +27,6 @@ const ChatAI = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [userInfo, setUserInfo] = useState(null);
-  const [feedbackGiven, setFeedbackGiven] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of messages
@@ -156,25 +144,14 @@ const ChatAI = () => {
     }
   };
 
-  const handleSuggestedQuestion = (question: string) => {
-    setInputMessage(question);
-  };
-
-  const handleFeedback = (isPositive: boolean) => {
-    toast.success(isPositive 
-      ? 'Obrigado pelo feedback positivo!' 
-      : 'Obrigado pelo feedback. Vamos melhorar!');
-    setFeedbackGiven(true);
-  };
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full">
       <section className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Assistente IA</h1>
         <p className="text-muted-foreground">Converse com nosso assistente inteligente para esclarecer dúvidas</p>
       </section>
 
-      <Tabs defaultValue="chat" className="w-full">
+      <Tabs defaultValue="chat" className="w-full h-[calc(100%-100px)]">
         <TabsList className="grid w-full md:w-auto grid-cols-2 gap-4">
           <TabsTrigger value="chat" className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4" /> Chat
@@ -184,169 +161,113 @@ const ChatAI = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="chat" className="animate-fade-in">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-            <Card className="lg:col-span-3">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bot className="h-5 w-5 text-primary" />
-                  <span>Chat com Assistente IA</span>
-                </CardTitle>
-                <CardDescription>
-                  Tire suas dúvidas sobre a plataforma e recursos de estudo
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px] rounded-md border p-4">
-                  <div className="space-y-4">
-                    {messages.map((message, index) => (
+        <TabsContent value="chat" className="animate-fade-in h-full">
+          <Card className="h-full flex flex-col">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Bot className="h-5 w-5 text-primary" />
+                <span>Chat com Assistente IA</span>
+              </CardTitle>
+              <CardDescription>
+                Tire suas dúvidas sobre a plataforma e recursos de estudo
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-hidden">
+              <ScrollArea className="h-full rounded-md border p-4">
+                <div className="space-y-4">
+                  {messages.map((message, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
                       <div
-                        key={index}
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                        className={`flex gap-3 max-w-[80%] ${
+                          message.role === 'user'
+                            ? 'flex-row-reverse'
+                            : 'flex-row'
+                        }`}
                       >
                         <div
-                          className={`flex gap-3 max-w-[80%] ${
+                          className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
                             message.role === 'user'
-                              ? 'flex-row-reverse'
-                              : 'flex-row'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-muted'
                           }`}
                         >
-                          <div
-                            className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                              message.role === 'user'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted'
-                            }`}
-                          >
-                            {message.role === 'user' ? (
-                              <User className="h-5 w-5" />
-                            ) : (
-                              <Bot className="h-5 w-5" />
-                            )}
-                          </div>
-                          <div
-                            className={`rounded-lg px-4 py-2 text-sm ${
-                              message.role === 'user'
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-accent'
-                            }`}
-                          >
-                            <div className="space-y-2">
-                              <p>{message.content}</p>
-                              <p className={`text-xs ${
-                                message.role === 'user'
-                                  ? 'text-primary-foreground/70'
-                                  : 'text-muted-foreground'
-                              }`}>
-                                {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                    {isTyping && (
-                      <div className="flex justify-start">
-                        <div className="flex gap-3 max-w-[80%]">
-                          <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                          {message.role === 'user' ? (
+                            <User className="h-5 w-5" />
+                          ) : (
                             <Bot className="h-5 w-5" />
-                          </div>
-                          <div className="rounded-lg px-4 py-2 text-sm bg-accent">
-                            <div className="flex gap-1">
-                              <span className="animate-pulse">.</span>
-                              <span className="animate-pulse delay-75">.</span>
-                              <span className="animate-pulse delay-150">.</span>
-                            </div>
+                          )}
+                        </div>
+                        <div
+                          className={`rounded-lg px-4 py-2 text-sm ${
+                            message.role === 'user'
+                              ? 'bg-primary text-primary-foreground'
+                              : 'bg-accent'
+                          }`}
+                        >
+                          <div className="space-y-2">
+                            <p>{message.content}</p>
+                            <p className={`text-xs ${
+                              message.role === 'user'
+                                ? 'text-primary-foreground/70'
+                                : 'text-muted-foreground'
+                            }`}>
+                              {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </p>
                           </div>
                         </div>
                       </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
-                </ScrollArea>
-              </CardContent>
-              <CardFooter>
-                <div className="flex w-full gap-2">
-                  <Input
-                    placeholder="Digite sua mensagem..."
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSendMessage();
-                      }
-                    }}
-                    className="flex-1"
-                  />
-                  <Button 
-                    onClick={handleSendMessage} 
-                    className="micro-bounce" 
-                    disabled={!inputMessage.trim() || isTyping}
-                  >
-                    {isTyping ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
-
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Perguntas Sugeridas</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {suggestedQuestions.map((question, index) => (
-                      <Button
-                        key={index}
-                        variant="outline"
-                        className="w-full justify-between micro-bounce"
-                        onClick={() => handleSuggestedQuestion(question)}
-                      >
-                        <span className="truncate">{question}</span>
-                        <ChevronRight className="h-4 w-4 ml-2 shrink-0" />
-                      </Button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {messages.length > 1 && !feedbackGiven && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Feedback</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      As respostas foram úteis?
-                    </p>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        className="flex-1 micro-bounce"
-                        onClick={() => handleFeedback(true)}
-                      >
-                        <ThumbsUp className="h-4 w-4 mr-2" />
-                        Sim
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        className="flex-1 micro-bounce"
-                        onClick={() => handleFeedback(false)}
-                      >
-                        <ThumbsDown className="h-4 w-4 mr-2" />
-                        Não
-                      </Button>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
+                  ))}
+                  {isTyping && (
+                    <div className="flex justify-start">
+                      <div className="flex gap-3 max-w-[80%]">
+                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                          <Bot className="h-5 w-5" />
+                        </div>
+                        <div className="rounded-lg px-4 py-2 text-sm bg-accent">
+                          <div className="flex gap-1">
+                            <span className="animate-pulse">.</span>
+                            <span className="animate-pulse delay-75">.</span>
+                            <span className="animate-pulse delay-150">.</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+            </CardContent>
+            <CardFooter>
+              <div className="flex w-full gap-2">
+                <Input
+                  placeholder="Digite sua mensagem..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSendMessage();
+                    }
+                  }}
+                  className="flex-1"
+                />
+                <Button 
+                  onClick={handleSendMessage} 
+                  className="micro-bounce" 
+                  disabled={!inputMessage.trim() || isTyping}
+                >
+                  {isTyping ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
         </TabsContent>
 
         <TabsContent value="help" className="animate-fade-in">
