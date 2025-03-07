@@ -36,7 +36,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
             </Button>
           )}
         </div>
-        <div className="flex-1 overflow-auto w-full">
+        <div className="flex-1 overflow-auto w-full relative">
           {children}
         </div>
       </main>

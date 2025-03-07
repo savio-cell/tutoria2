@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import TopRanking from '@/components/gamification/TopRanking';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -113,8 +115,8 @@ const Dashboard = () => {
         : <Edit className="h-4 w-4 text-amber-500" />;
     } else {
       // Ensure we're working with numbers for the calculation
-      const score = Number(activity.score || 0);
-      const total = Number(activity.total || 1);
+      const score = typeof activity.score === 'number' ? activity.score : Number(activity.score || 0);
+      const total = typeof activity.total === 'number' ? activity.total : Number(activity.total || 1);
       
       const percentage = (score / total) * 100;
       
@@ -126,8 +128,8 @@ const Dashboard = () => {
 
   return (
     <div className="w-full h-full overflow-auto">
-      <ScrollArea className="h-[calc(100vh-57px)] w-full">
-        <div className="space-y-6 w-full p-4 pb-24 md:pb-16">
+      <ScrollArea className="h-[calc(100vh-120px)] w-full">
+        <div className="space-y-6 w-full p-6 pb-24 md:pb-16">
           <section className="flex flex-col gap-2">
             <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground">Bem-vindo(a) de volta! Veja seu progresso e continue seus estudos</p>
@@ -188,6 +190,9 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           </div>
+
+          {/* Ranking Section */}
+          <TopRanking />
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Recent Activity */}
