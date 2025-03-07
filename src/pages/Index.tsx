@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,10 +46,9 @@ const Dashboard = () => {
   // Calculate average quiz score percentage with proper type checking
   const averageQuizPercentage = quizResults.length > 0 
     ? quizResults.reduce((sum, quiz) => {
-        // Ensure both score and total_questions are treated as numbers
-        const score = Number(quiz.score) || 0;
-        const totalQuestions = Number(quiz.total_questions) || 1; // Avoid division by zero
-        return sum + (score / totalQuestions * 100);
+        const score = Number(quiz.score || 0);
+        const totalQuestions = Number(quiz.total_questions || 1);
+        return sum + ((score / totalQuestions) * 100);
       }, 0) / quizResults.length 
     : 0;
 
@@ -115,8 +113,8 @@ const Dashboard = () => {
         : <Edit className="h-4 w-4 text-amber-500" />;
     } else {
       // Ensure we're working with numbers for the calculation
-      const score = typeof activity.score === 'number' ? activity.score : Number(activity.score || 0);
-      const total = typeof activity.total === 'number' ? activity.total : Number(activity.total || 1);
+      const score = Number(activity.score || 0);
+      const total = Number(activity.total || 1);
       
       const percentage = (score / total) * 100;
       

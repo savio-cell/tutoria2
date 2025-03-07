@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,10 +15,12 @@ import {
   RotateCw,
   Sparkles,
   Brain,
-  Book
+  Book,
+  Home
 } from 'lucide-react';
 import { toast } from "sonner";
 import { useProgress } from '@/hooks/useProgress';
+import { useNavigate } from 'react-router-dom';
 
 const quizQuestions = [
   {
@@ -42,6 +45,7 @@ const quizQuestions = [
 
 const Quiz = () => {
   const { addQuizResult } = useProgress();
+  const navigate = useNavigate();
   const [quizStarted, setQuizStarted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -152,6 +156,10 @@ const Quiz = () => {
       setSelectedAnswer(answeredQuestions[currentQuestion - 1] || null);
       setShowExplanation(!!answeredQuestions[currentQuestion - 1]);
     }
+  };
+
+  const handleBackToHome = () => {
+    navigate('/');
   };
 
   const calculateScore = () => {
@@ -478,8 +486,19 @@ const Quiz = () => {
             </div>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-center p-4 sm:p-6">
-          <Button onClick={startQuiz} className="micro-bounce">
+        <CardFooter className="flex flex-col sm:flex-row gap-3 p-4 sm:p-6">
+          <Button 
+            variant="outline" 
+            onClick={handleBackToHome} 
+            className="micro-bounce w-full sm:w-auto"
+          >
+            <Home className="h-4 w-4 mr-2" />
+            Voltar ao Menu
+          </Button>
+          <Button 
+            onClick={startQuiz} 
+            className="micro-bounce w-full sm:w-auto"
+          >
             <RotateCw className="h-4 w-4 mr-2" />
             Tentar Novamente
           </Button>

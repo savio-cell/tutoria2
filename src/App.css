@@ -46,9 +46,18 @@
   padding-bottom: 2rem;
 }
 
+/* Add consistent page section spacing */
+section {
+  padding: 1rem 1.5rem;
+}
+
 /* Mobile responsiveness improvements */
 @media (max-width: 640px) {
   .page-container {
     padding-bottom: 5rem;
+  }
+  
+  section {
+    padding: 1rem;
   }
 }

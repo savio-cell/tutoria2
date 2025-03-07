@@ -13,15 +13,18 @@ import {
   FileQuestion, 
   BookOpen, 
   Lightbulb,
-  Loader2
+  Loader2,
+  Home
 } from 'lucide-react';
 import { toast } from "sonner";
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useProgress } from '@/hooks/useProgress';
+import { useNavigate } from 'react-router-dom';
 
 const ChatAI = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { essays, quizResults } = useProgress();
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
@@ -145,9 +148,20 @@ const ChatAI = () => {
   };
 
   return (
-    <div className="space-y-6 h-full">
-      <section className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold tracking-tight">Assistente IA</h1>
+    <div className="space-y-6 h-full px-4 sm:px-6 md:px-8 pb-4">
+      <section className="flex flex-col gap-2 mb-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Assistente IA</h1>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate('/')}
+            className="md:hidden"
+          >
+            <Home className="h-4 w-4 mr-2" />
+            Menu
+          </Button>
+        </div>
         <p className="text-muted-foreground">Converse com nosso assistente inteligente para esclarecer dúvidas</p>
       </section>
 
