@@ -125,8 +125,8 @@ export const useRankingData = () => {
         user.rank = index + 1;
       });
       
-      // Get top users - always get top 3 regardless of current user
-      const topThreeUsers = ranking.slice(0, 3);
+      // Always get top 3 users for all users
+      const topThreeUsers = ranking.slice(0, Math.min(3, ranking.length));
       setTopUsers(topThreeUsers);
       
       // Find current user's rank
@@ -134,6 +134,12 @@ export const useRankingData = () => {
         const currentUserRank = ranking.find(r => r.id === user.id);
         setUserRank(currentUserRank || null);
       }
+      
+      console.log("Ranking updated:", {
+        allUsers: ranking.length,
+        topUsers: topThreeUsers,
+        currentUserRank: user ? ranking.find(r => r.id === user.id) : null
+      });
       
     } catch (error) {
       console.error('Error fetching ranking data:', error);
