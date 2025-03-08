@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { toast } from "sonner";
 import { useProgress } from '@/hooks/useProgress';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   FileText, 
   FileCheck, 
@@ -24,86 +26,19 @@ import {
   PenTool,
   Save,
   ArrowLeft,
-  ListChecks
+  ListChecks,
+  Loader2
 } from 'lucide-react';
-
-const essayTopics = [
-  {
-    id: 1,
-    title: 'Impactos da Tecnologia na Educação',
-    description: 'Discuta como as novas tecnologias estão transformando os métodos de ensino e aprendizagem',
-    deadline: '5 dias',
-    materials: [
-      { title: 'Artigo: Tecnologia e Educação no Século XXI', url: '#' },
-      { title: 'Vídeo: O Futuro da Sala de Aula', url: '#' },
-      { title: 'Infográfico: Estatísticas de Aprendizagem Digital', url: '#' },
-    ]
-  },
-  {
-    id: 2,
-    title: 'Desafios da Sustentabilidade no Brasil',
-    description: 'Analise os principais desafios ambientais enfrentados pelo Brasil e possíveis soluções',
-    deadline: '7 dias',
-    materials: [
-      { title: 'Relatório: Situação Ambiental Brasileira 2023', url: '#' },
-      { title: 'Artigo: Políticas Públicas para Sustentabilidade', url: '#' },
-      { title: 'Documentário: Amazônia em Risco', url: '#' },
-    ]
-  },
-];
-
-const mockFeedback = {
-  score: 850,
-  maxScore: 1000,
-  competencies: [
-    { 
-      name: 'Domínio da norma culta', 
-      score: 180, 
-      maxScore: 200,
-      feedback: 'Bom domínio da modalidade escrita formal, com poucos desvios gramaticais e de convenções da escrita.',
-      status: 'good'
-    },
-    { 
-      name: 'Compreensão da proposta', 
-      score: 160, 
-      maxScore: 200,
-      feedback: 'Compreende bem a proposta e desenvolve o tema, mas com algumas limitações na articulação das ideias.',
-      status: 'medium'
-    },
-    { 
-      name: 'Capacidade de argumentação', 
-      score: 170, 
-      maxScore: 200,
-      feedback: 'Seleciona e relaciona argumentos de forma consistente em defesa de seu ponto de vista.',
-      status: 'good'
-    },
-    { 
-      name: 'Construção lógica', 
-      score: 170, 
-      maxScore: 200,
-      feedback: 'Articula as partes do texto de maneira coerente, mas com algumas falhas na progressão textual.',
-      status: 'medium'
-    },
-    { 
-      name: 'Proposta de intervenção', 
-      score: 170, 
-      maxScore: 200,
-      feedback: 'Elabora proposta de intervenção clara e relacionada ao tema, respeitando os direitos humanos.',
-      status: 'good'
-    },
-  ],
-  generalFeedback: 'Sua redação apresenta uma boa compreensão do tema e argumentação consistente. Para melhorar, procure aprofundar mais alguns pontos e trabalhar na construção lógica do texto. A proposta de intervenção é adequada, mas poderia ser mais detalhada.'
-};
 
 const Essay = () => {
   const navigate = useNavigate();
   const { essays, addEssay, updateEssayScore, loading } = useProgress();
-  const [selectedTopic, setSelectedTopic] = useState<typeof essayTopics[0] | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<any | null>(null);
   const [essayText, setEssayText] = useState('');
   const [submittedEssay, setSubmittedEssay] = useState(false);
   const [currentEssayId, setCurrentEssayId] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
-  const [feedback, setFeedback] = useState<typeof mockFeedback | null>(null);
+  const [feedback, setFeedback] = useState<any | null>(null);
   const [wordCount, setWordCount] = useState(0);
   const [isGeneratingTheme, setIsGeneratingTheme] = useState(false);
   const [aiGeneratedTopic, setAiGeneratedTopic] = useState<any | null>(null);
@@ -180,7 +115,7 @@ const Essay = () => {
     }
   }, [wordCount, minWordCount, idealWordCount]);
 
-  const selectTopic = (topic: typeof essayTopics[0]) => {
+  const selectTopic = (topic: any) => {
     setSelectedTopic(topic);
     setSubmittedEssay(false);
     setFeedback(null);
@@ -260,18 +195,58 @@ const Essay = () => {
     setSubmittedEssay(true);
     setAnalyzing(true);
     
-    setTimeout(async () => {
-      setAnalyzing(false);
-      setFeedback(mockFeedback);
+    try {
+      // Create the prompt for essay analysis
+      const prompt = `Analyze this essay based on the five key competencies used in the Brazilian ENEM exam:
+      
+Topic: ${selectedTopic.title}
+Essay:
+${essayText}
+
+Please evaluate each of the following five competencies on a scale of 0-200 points:
+1. Domínio da norma culta (Command of formal writing): Analyze grammar, vocabulary, spelling, and punctuation.
+2. Compreensão da proposta (Understanding of the prompt): Evaluate if the essay addresses the given topic appropriately.
+3. Capacidade de argumentação (Argumentation): Assess the use of arguments, supporting evidence, and reasoning.
+4. Construção lógica (Logical structure): Evaluate the organization, cohesion, and coherence of the text.
+5. Proposta de intervenção (Solution proposal): Assess the quality and feasibility of the proposed solution.
+
+For each competency, provide a numerical score (0-200) and specific feedback.
+End with a general comment about the essay's strengths and areas for improvement.`;
+      
+      // Call the Supabase AI function
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: {
+          prompt,
+          type: 'essay-analysis'
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.error) throw new Error(data.error);
+      
+      setFeedback(data);
       
       if (currentEssayId) {
         try {
-          await updateEssayScore(currentEssayId, mockFeedback.score);
+          await updateEssayScore(currentEssayId, data.score);
         } catch (error) {
           console.error("Error updating essay score:", error);
         }
       }
-    }, 3000);
+    } catch (error) {
+      console.error("Error analyzing essay:", error);
+      toast.error("Erro ao analisar a redação. Tente novamente mais tarde.");
+      // Set a default feedback with an error message
+      setFeedback({
+        score: 0,
+        maxScore: 1000,
+        competencies: [],
+        generalFeedback: "Erro ao analisar a redação. Por favor, tente novamente mais tarde."
+      });
+    } finally {
+      setAnalyzing(false);
+    }
   };
 
   const resetEssay = () => {
@@ -301,24 +276,27 @@ const Essay = () => {
     setWordCount(essay.word_count);
     setTimeSpent(essay.time_spent);
     
-    const matchingTopic = essayTopics.find(topic => topic.title === essay.title);
-    if (matchingTopic) {
-      setSelectedTopic(matchingTopic);
-    } else {
-      setSelectedTopic({
-        id: 999,
-        title: essay.title,
-        description: "Redação salva anteriormente",
-        deadline: "Concluída",
-        materials: []
-      });
-    }
+    setSelectedTopic({
+      id: 999,
+      title: essay.title,
+      description: "Redação salva anteriormente",
+      deadline: "Concluída",
+      materials: []
+    });
     
     if (essay.status === "evaluated" && essay.score) {
       setSubmittedEssay(true);
       const essayFeedback = {
-        ...mockFeedback,
         score: essay.score,
+        maxScore: 1000,
+        competencies: [
+          { name: 'Domínio da norma culta', score: Math.round(essay.score * 0.2), maxScore: 200, status: 'medium' },
+          { name: 'Compreensão da proposta', score: Math.round(essay.score * 0.2), maxScore: 200, status: 'medium' },
+          { name: 'Capacidade de argumentação', score: Math.round(essay.score * 0.2), maxScore: 200, status: 'medium' },
+          { name: 'Construção lógica', score: Math.round(essay.score * 0.2), maxScore: 200, status: 'medium' },
+          { name: 'Proposta de intervenção', score: Math.round(essay.score * 0.2), maxScore: 200, status: 'medium' }
+        ],
+        generalFeedback: "Detalhes da avaliação não disponíveis para esta redação."
       };
       setFeedback(essayFeedback);
     }
@@ -334,17 +312,41 @@ const Essay = () => {
     setIsGeneratingTheme(true);
     
     try {
-      toast.info("Esta é uma simulação. A integração real será implementada quando a chave API for fornecida.");
+      // Create the prompt for generating an essay topic
+      const prompt = `Generate a compelling essay topic suitable for high school or college students. The topic should be current, engaging, and should require critical thinking and research.
+
+Please provide:
+1. A clear title for the essay
+2. A brief description of what the essay should address
+3. Three supporting materials that would help a student research this topic (include title and brief description for each)
+
+The topic should be suitable for a 500-word essay and should encourage students to form and defend an opinion.`;
       
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      setAiGeneratedTopic(essayTopics[0]);
-      setSelectedTopic(essayTopics[0]);
-      setIsGeneratingTheme(false);
+      // Call the Supabase AI function
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: {
+          prompt,
+          type: 'essay'
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setAiGeneratedTopic(data);
+      setSelectedTopic(data);
       setWorkingOnEssay(true);
+      toast.success("Tema de redação gerado com sucesso!");
     } catch (error) {
-      setIsGeneratingTheme(false);
+      console.error("Error generating essay topic:", error);
       toast.error("Erro ao gerar o tema. Tente novamente mais tarde.");
+    } finally {
+      setIsGeneratingTheme(false);
     }
   };
 
@@ -514,7 +516,10 @@ const Essay = () => {
           disabled={isGeneratingTheme}
         >
           {isGeneratingTheme ? (
-            <span className="animate-pulse">Gerando Tema...</span>
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <span>Gerando Tema...</span>
+            </>
           ) : (
             <>
               <Sparkles className="h-4 w-4 mr-2" />
@@ -602,7 +607,7 @@ const Essay = () => {
             <span>Materiais de Apoio</span>
           </h3>
           <ul className="space-y-2">
-            {selectedTopic?.materials.map((material, idx) => (
+            {selectedTopic?.materials?.map((material, idx) => (
               <li key={idx} className="text-sm flex items-center gap-2">
                 <a 
                   href={material.url} 
@@ -795,7 +800,7 @@ const Essay = () => {
   );
 
   return (
-    <div className="space-y-6 h-[calc(100vh-200px)] overflow-y-auto">
+    <div className="space-y-6 h-[calc(100vh-200px)] overflow-y-auto pb-16 px-4">
       <section className="flex flex-col gap-2">
         <h1 className="text-3xl font-bold tracking-tight">Redação</h1>
         <p className="text-muted-foreground">Escreva redações e receba feedback automático para melhorar suas habilidades</p>

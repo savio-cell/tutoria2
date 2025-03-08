@@ -26,10 +26,10 @@ const ChatAI = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { essays, quizResults } = useProgress();
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom of messages
@@ -62,7 +62,7 @@ const ChatAI = () => {
       const { data, error } = await supabase
         .from('user_info')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', user?.id)
         .single();
       
       if (error && error.code !== 'PGRST116') {
@@ -70,7 +70,7 @@ const ChatAI = () => {
         return;
       }
       
-      setUserInfo(data || { id: user.id });
+      setUserInfo(data || { id: user?.id });
     } catch (error) {
       console.error('Error fetching user info:', error);
     }

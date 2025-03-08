@@ -31,10 +31,10 @@ serve(async (req) => {
         }
         break;
       case 'quiz':
-        systemPrompt += "You generate educational quiz questions based on a given topic. Include the question, multiple choice options, and the correct answer with explanation.";
+        systemPrompt += "You generate educational quiz questions based on a given topic. For each question, provide: 1) The question text, 2) Four multiple choice options labeled A, B, C, D, 3) The correct answer letter, 4) A brief explanation of why the answer is correct. Generate exactly the number of questions requested, formatted consistently.";
         break;
       case 'essay':
-        systemPrompt += "You generate essay topics with supporting materials for educational purposes.";
+        systemPrompt += "You generate essay topics with supporting materials for educational purposes. Provide: 1) A compelling essay title, 2) A brief description of the topic, 3) A list of exactly 3 supporting materials (articles, videos, infographics, etc.) that would help the student research the topic. Make the topic challenging but appropriate for high school or college-level writing.";
         break;
       case 'essay-analysis':
         systemPrompt += "You analyze student essays based on five key competencies: language conventions, comprehension of the topic, argumentation, logical structure, and proposed solution. Provide a score from 0-200 for each competency and detailed feedback.";
@@ -93,6 +93,18 @@ serve(async (req) => {
           formattedResponse = { 
             rawResponse: aiResponse,
             error: "Failed to parse structured quiz" 
+          };
+        }
+        break;
+      case 'essay':
+        try {
+          // Attempt to parse the AI response into a structured essay topic
+          formattedResponse = parseEssayTopic(aiResponse);
+        } catch (error) {
+          console.error("Error parsing essay topic:", error);
+          formattedResponse = { 
+            rawResponse: aiResponse,
+            error: "Failed to parse structured essay topic" 
           };
         }
         break;
@@ -183,9 +195,6 @@ function extractFeedbackForCompetency(aiResponse, competencyName) {
 // Helper function to parse quiz questions from AI response
 function parseQuizQuestions(aiResponse) {
   try {
-    // Simple parser for quiz questions
-    // In production, you'd want to structure the AI prompt to return JSON
-    
     // Split by numbered questions (e.g., "1.", "2.", etc.)
     const questionBlocks = aiResponse.split(/\d+\.\s+/).filter(block => block.trim().length > 0);
     
@@ -252,6 +261,85 @@ function parseQuizQuestions(aiResponse) {
     return {
       rawResponse: aiResponse,
       error: "Failed to parse structured quiz"
+    };
+  }
+}
+
+// Helper function to parse essay topic from AI response
+function parseEssayTopic(aiResponse) {
+  try {
+    // Basic parsing to extract title, description, and materials
+    const titleMatch = aiResponse.match(/(?:Título|Title):\s*(.+?)(?:\n|$)/i);
+    const descriptionMatch = aiResponse.match(/(?:Descrição|Description):\s*(.+?)(?:\n|$)/i);
+    
+    // If we couldn't find a title or description with explicit markers, try to extract from structure
+    const lines = aiResponse.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    
+    let title = titleMatch ? titleMatch[1].trim() : lines[0];
+    let description = descriptionMatch ? descriptionMatch[1].trim() : lines[1];
+    
+    // Extract materials, looking for numbered or bulleted lists
+    const materials = [];
+    const materialRegex = /(?:\d+\.|•|-)\s*(?:Material\s*\d+:)?\s*(.+?)(?:\s*(?:URL|Link):\s*(.+?))?(?:\n|$)/gi;
+    
+    let match;
+    while ((match = materialRegex.exec(aiResponse)) !== null && materials.length < 3) {
+      materials.push({
+        title: match[1].trim(),
+        url: match[2] ? match[2].trim() : '#'
+      });
+    }
+    
+    // If we couldn't find materials with the regex, try to extract from the structure
+    if (materials.length === 0) {
+      for (let i = 2; i < Math.min(lines.length, 5); i++) {
+        if (lines[i].includes(':')) {
+          const [materialTitle, url] = lines[i].split(':').map(part => part.trim());
+          materials.push({
+            title: materialTitle,
+            url: url || '#'
+          });
+        } else {
+          materials.push({
+            title: lines[i],
+            url: '#'
+          });
+        }
+      }
+    }
+    
+    // Ensure we have exactly 3 materials
+    while (materials.length < 3) {
+      materials.push({
+        title: `Material de apoio ${materials.length + 1}`,
+        url: '#'
+      });
+    }
+    
+    // If we have more than 3, trim to exactly 3
+    if (materials.length > 3) {
+      materials.length = 3;
+    }
+    
+    return {
+      title,
+      description,
+      materials,
+      deadline: '7 dias'
+    };
+  } catch (error) {
+    console.error("Error parsing essay topic:", error);
+    return {
+      title: "Tópico de Redação",
+      description: "Não foi possível analisar o tema corretamente.",
+      materials: [
+        { title: "Material de apoio 1", url: "#" },
+        { title: "Material de apoio 2", url: "#" },
+        { title: "Material de apoio 3", url: "#" }
+      ],
+      deadline: '7 dias',
+      rawResponse: aiResponse,
+      error: "Failed to parse structured essay topic"
     };
   }
 }

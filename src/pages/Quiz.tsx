@@ -16,32 +16,13 @@ import {
   Sparkles,
   Brain,
   Book,
-  Home
+  Home,
+  Loader2
 } from 'lucide-react';
 import { toast } from "sonner";
 import { useProgress } from '@/hooks/useProgress';
 import { useNavigate } from 'react-router-dom';
-
-const quizQuestions = [
-  {
-    question: "Qual é a capital do Brasil?",
-    options: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador"],
-    correctAnswer: "Brasília",
-    explanation: "Brasília é a capital federal do Brasil desde 21 de abril de 1960."
-  },
-  {
-    question: "Qual dessas obras foi escrita por Machado de Assis?",
-    options: ["O Guarani", "Vidas Secas", "Dom Casmurro", "O Cortiço"],
-    correctAnswer: "Dom Casmurro",
-    explanation: "Dom Casmurro é um romance escrito por Machado de Assis, publicado em 1899."
-  },
-  {
-    question: "Qual é o resultado de 8 × 9?",
-    options: ["63", "72", "81", "64"],
-    correctAnswer: "72",
-    explanation: "8 × 9 = 72, pois 8 × 9 = 8 + 8 + 8 + 8 + 8 + 8 + 8 + 8 + 8 = 72."
-  }
-];
+import { supabase } from '@/integrations/supabase/client';
 
 const Quiz = () => {
   const { addQuizResult } = useProgress();
@@ -57,7 +38,7 @@ const Quiz = () => {
   const [topic, setTopic] = useState('');
   const [questionCount, setQuestionCount] = useState(5);
   const [difficulty, setDifficulty] = useState('médio');
-  const [aiGeneratedQuestions, setAiGeneratedQuestions] = useState<any[]>([]);
+  const [quizQuestions, setQuizQuestions] = useState<any[]>([]);
   const [progress, setProgress] = useState(0);
   const [quizStartTime, setQuizStartTime] = useState<Date | null>(null);
   const [quizEndTime, setQuizEndTime] = useState<Date | null>(null);
@@ -87,15 +68,38 @@ const Quiz = () => {
     setIsGenerating(true);
     
     try {
-      toast.info("Esta é uma simulação. A integração real será implementada quando a chave API for fornecida.");
+      // Create the prompt for the AI
+      const prompt = `Gere ${questionCount} perguntas de quiz sobre o tema "${topic}" com nível de dificuldade ${difficulty}. 
+Para cada pergunta, forneça quatro alternativas (A, B, C, D), indique a resposta correta e dê uma breve explicação.`;
       
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      setIsGenerating(false);
-      startQuiz();
+      // Call the Supabase AI function
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: {
+          prompt,
+          type: 'quiz'
+        }
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (data.questions && data.questions.length > 0) {
+        setQuizQuestions(data.questions);
+        toast.success(`Quiz gerado com ${data.questions.length} questões!`);
+        startQuiz();
+      } else {
+        throw new Error("Não foi possível gerar perguntas para o quiz.");
+      }
     } catch (error) {
-      setIsGenerating(false);
+      console.error("Error generating quiz:", error);
       toast.error("Erro ao gerar o quiz. Tente novamente mais tarde.");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -184,7 +188,7 @@ const Quiz = () => {
 
   useEffect(() => {
     const saveQuizResult = async () => {
-      if (quizCompleted && quizStartTime && !quizResultSaved) {
+      if (quizCompleted && quizStartTime && !quizResultSaved && quizQuestions.length > 0) {
         setQuizResultSaved(true); // Prevent multiple saves
         
         const score = calculateScore();
@@ -194,7 +198,7 @@ const Quiz = () => {
         
         try {
           await addQuizResult(
-            "Quiz de Teste",
+            topic || "Quiz Gerado por IA",
             score.correct,
             quizQuestions.length,
             timeSpentInSeconds
@@ -207,7 +211,7 @@ const Quiz = () => {
     };
     
     saveQuizResult();
-  }, [quizCompleted, quizStartTime, quizEndTime, addQuizResult, quizResultSaved]);
+  }, [quizCompleted, quizStartTime, quizEndTime, addQuizResult, quizResultSaved, quizQuestions.length, topic]);
 
   const renderQuizStart = () => (
     <Card className="w-full max-w-2xl mx-auto">
@@ -268,7 +272,8 @@ const Quiz = () => {
         >
           {isGenerating ? (
             <>
-              <span className="animate-pulse">Gerando Quiz...</span>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <span>Gerando Quiz...</span>
             </>
           ) : (
             <>
@@ -309,6 +314,8 @@ const Quiz = () => {
 
   const renderQuizQuestion = () => {
     const question = quizQuestions[currentQuestion];
+    if (!question) return null;
+    
     const isCorrect = selectedAnswer === question.correctAnswer;
     const actualProgress = ((Object.keys(answeredQuestions).length) / quizQuestions.length) * 100;
 
@@ -496,11 +503,18 @@ const Quiz = () => {
             Voltar ao Menu
           </Button>
           <Button 
-            onClick={startQuiz} 
+            onClick={() => {
+              setQuizStarted(false);
+              setSelectedAnswer(null);
+              setAnsweredQuestions({});
+              setShowExplanation(false);
+              setQuizCompleted(false);
+              setQuizQuestions([]);
+            }} 
             className="micro-bounce w-full sm:w-auto"
           >
             <RotateCw className="h-4 w-4 mr-2" />
-            Tentar Novamente
+            Novo Quiz
           </Button>
         </CardFooter>
       </Card>
@@ -516,7 +530,7 @@ const Quiz = () => {
 
       {isGenerating && renderGeneratingQuiz()}
       {!isGenerating && !quizStarted && renderQuizStart()}
-      {!isGenerating && quizStarted && !quizCompleted && renderQuizQuestion()}
+      {!isGenerating && quizStarted && !quizCompleted && quizQuestions.length > 0 && renderQuizQuestion()}
       {!isGenerating && quizCompleted && renderQuizResults()}
     </div>
   );
