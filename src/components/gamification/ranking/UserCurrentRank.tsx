@@ -11,10 +11,14 @@ type RankingUser = {
 
 type UserCurrentRankProps = {
   userRank: RankingUser | null;
+  topUsers: RankingUser[];
 };
 
-const UserCurrentRank: React.FC<UserCurrentRankProps> = ({ userRank }) => {
-  if (!userRank || userRank.rank <= 3) return null;
+const UserCurrentRank: React.FC<UserCurrentRankProps> = ({ userRank, topUsers }) => {
+  // Não mostrar se o usuário estiver no top 3
+  if (!userRank || topUsers.some(user => user.id === userRank.id)) {
+    return null;
+  }
   
   return (
     <div>

@@ -36,7 +36,7 @@ const TopRanking = () => {
               ))}
             </div>
             
-            <UserCurrentRank userRank={userRank} />
+            <UserCurrentRank userRank={userRank} topUsers={topUsers} />
           </div>
         )}
       </CardContent>
