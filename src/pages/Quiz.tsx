@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -522,7 +521,7 @@ Para cada pergunta, forneça quatro alternativas (A, B, C, D), indique a respost
   };
 
   return (
-    <div className="space-y-6 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto h-full overflow-auto pb-16">
+    <div className="space-y-6 px-4 sm:px-6 md:px-8 max-w-7xl mx-auto min-h-screen overflow-y-auto pb-16">
       <section className="flex flex-col gap-2 text-center sm:text-left">
         <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight">Quiz</h1>
         <p className="text-sm md:text-base text-muted-foreground">Teste seus conhecimentos e aprenda com exercícios interativos</p>

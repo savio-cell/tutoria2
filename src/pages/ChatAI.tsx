@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -148,7 +147,7 @@ const ChatAI = () => {
   };
 
   return (
-    <div className="space-y-6 h-full px-4 sm:px-6 md:px-8 pb-4">
+    <div className="space-y-6 min-h-screen px-4 sm:px-6 md:px-8 pb-16 overflow-y-auto">
       <section className="flex flex-col gap-2 mb-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Assistente IA</h1>
