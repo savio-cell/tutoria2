@@ -1,5 +1,4 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,10 +12,19 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleLogout = async () => {
-    await signOut();
-    navigate('/login');
+    setLoading(true);
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+      // Forçar navegação para login em caso de erro
+      navigate('/login');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,9 +37,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               variant="outline" 
               size="sm" 
               onClick={handleLogout}
+              disabled={loading} // Adicionar esta linha
               className="flex items-center gap-2 micro-bounce"
             >
-              <LogOut size={16} />
+              {loading ? (
+                <span className="loading loading-spinner loading-xs" />
+              ) : (
+                <LogOut size={16} />
+              )}
               <span className="hidden md:inline">Sair</span>
             </Button>
           )}

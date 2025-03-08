@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { useProgress } from '@/hooks/useProgress';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 const Quiz = () => {
   const { addQuizResult } = useProgress();
@@ -67,15 +68,30 @@ const Quiz = () => {
     setIsGenerating(true);
     
     try {
-      // Create the prompt for the AI
-      const prompt = `Gere ${questionCount} perguntas de quiz sobre o tema "${topic}" com nível de dificuldade ${difficulty}. 
-Para cada pergunta, forneça quatro alternativas (A, B, C, D), indique a resposta correta e dê uma breve explicação.`;
+      // Prompt em português com instruções específicas
+      const prompt = `Por favor, gere ${questionCount} questões de múltipla escolha em português sobre o tema "${topic}" com nível de dificuldade ${difficulty}. 
+
+Requisitos:
+- Cada questão deve ter 4 alternativas (A, B, C, D)
+- Forneça a resposta correta para cada questão
+- Inclua uma explicação clara e didática para a resposta correta
+- Use linguagem formal e apropriada para contexto educacional
+- Mantenha as perguntas relevantes ao nível de dificuldade solicitado
+- Todas as questões devem estar em português do Brasil
+- Evite anglicismos ou termos em outros idiomas, exceto quando necessário
+
+Formato desejado para cada questão:
+1. Enunciado da questão
+2. Alternativas A, B, C, D
+3. Resposta correta
+4. Explicação detalhada da resposta`;
       
-      // Call the Supabase AI function
+      // Chamada para a função AI
       const { data, error } = await supabase.functions.invoke('ai-assistant', {
         body: {
           prompt,
-          type: 'quiz'
+          type: 'quiz',
+          language: 'pt-BR' // Adicionando especificação explícita do idioma
         }
       });
 
@@ -84,18 +100,19 @@ Para cada pergunta, forneça quatro alternativas (A, B, C, D), indique a respost
       }
 
       if (data.error) {
-        throw new Error(data.error);
+        toast.error("Erro ao gerar o quiz: " + data.error);
+        return;
       }
 
       if (data.questions && data.questions.length > 0) {
         setQuizQuestions(data.questions);
-        toast.success(`Quiz gerado com ${data.questions.length} questões!`);
+        toast.success("Quiz gerado com sucesso!");
         startQuiz();
       } else {
-        throw new Error("Não foi possível gerar perguntas para o quiz.");
+        toast.error("Não foi possível gerar as questões. Tente novamente.");
       }
     } catch (error) {
-      console.error("Error generating quiz:", error);
+      console.error("Erro ao gerar quiz:", error);
       toast.error("Erro ao gerar o quiz. Tente novamente mais tarde.");
     } finally {
       setIsGenerating(false);
@@ -248,16 +265,19 @@ Para cada pergunta, forneça quatro alternativas (A, B, C, D), indique a respost
             
             <div className="space-y-2">
               <Label htmlFor="difficulty">Nível de Dificuldade</Label>
-              <select 
-                id="difficulty"
+              <Select
                 value={difficulty}
-                onChange={(e) => setDifficulty(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onValueChange={(value) => setDifficulty(value)}
               >
-                <option value="fácil">Fácil</option>
-                <option value="médio">Médio</option>
-                <option value="difícil">Difícil</option>
-              </select>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a dificuldade" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="fácil">Fácil</SelectItem>
+                  <SelectItem value="médio">Médio</SelectItem>
+                  <SelectItem value="difícil">Difícil</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>

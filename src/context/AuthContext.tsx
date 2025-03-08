@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
@@ -119,16 +118,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      setLoading(true); // Adicionar loading state
       const { error } = await supabase.auth.signOut();
       if (error) {
         toast.error(error.message);
         throw error;
       }
+      
+      // Limpar estados explicitamente
+      setSession(null);
+      setUser(null);
+      
       toast.success("Logout realizado com sucesso!");
       navigate('/login');
     } catch (error) {
       console.error(error);
-      throw error;
+      toast.error("Erro ao fazer logout");
+    } finally {
+      setLoading(false);
     }
   };
 

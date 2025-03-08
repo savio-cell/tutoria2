@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -51,6 +50,7 @@ const Essay = () => {
   const [writingProgress, setWritingProgress] = useState(0);
   const [workingOnEssay, setWorkingOnEssay] = useState(false);
   const [viewingPastEssay, setViewingPastEssay] = useState(false);
+  const [isGeneratingTopic, setIsGeneratingTopic] = useState(false);
 
   const resetViewStates = () => {
     setViewingPastEssay(false);
@@ -376,6 +376,38 @@ The topic should be suitable for a 500-word essay and should encourage students 
 
   const navigateToQuiz = () => {
     navigate('/quiz');
+  };
+
+  const handleGenerateNewTopic = async () => {
+    try {
+      setIsGeneratingTopic(true);
+      
+      const { data, error } = await supabase.functions.invoke('ai-assistant', {
+        body: {
+          type: 'essay-topic',
+          prompt: 'Gere um novo tema de redação no estilo ENEM em português, com uma pergunta central e contextualização social atual.',
+          language: 'pt-BR'
+        }
+      });
+
+      if (error) throw error;
+
+      if (data.topic) {
+        setTopic(data.topic);
+        toast.success('Novo tema gerado com sucesso!');
+      } else {
+        throw new Error('Não foi possível gerar um novo tema');
+      }
+    } catch (error) {
+      console.error('Erro ao gerar novo tema:', error);
+      toast.error('Erro ao gerar novo tema. Tente novamente.');
+    } finally {
+      setIsGeneratingTopic(false);
+    }
+  };
+
+  const handleGoBack = () => {
+    navigate('/');
   };
 
   const renderTopActionsBar = () => (
